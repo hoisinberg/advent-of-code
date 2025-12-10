@@ -5,12 +5,12 @@ use std::vec::Vec;
 
 pub fn read_lines<T, P>(path: &str, parser: &P) -> io::Result<Vec<T>>
 where
-    P: Fn(String) -> T,
+    P: Fn(String) -> io::Result<T>,
 {
     let file = File::open(Path::new(path))?;
     let mut lines: Vec<T> = Vec::new();
     for line in io::BufReader::new(file).lines() {
-        lines.push(parser(line?));
+        lines.push(parser(line?)?);
     }
     Ok(lines)
 }

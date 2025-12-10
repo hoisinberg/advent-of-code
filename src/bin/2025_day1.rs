@@ -23,17 +23,38 @@ fn parse_rotation(str: String) -> io::Result<i32> {
     Ok(sign * distance)
 }
 
-fn rotate(dial_and_zero_count: (i32, u32), rotation: &i32) -> (i32, u32) {
+fn rotate_part_1(dial_and_zero_count: (u32, u32), rotation: &i32) -> (u32, u32) {
     let (dial, zero_count) = dial_and_zero_count;
-    let new_dial = (dial + rotation).rem_euclid(100);
+    let new_dial = (dial + rotation.rem_euclid(100).unsigned_abs()) % 100;
     let zero_count_delta = if new_dial == 0 { 1 } else { 0 };
     (new_dial, zero_count + zero_count_delta)
+}
+
+fn rotate_part_2(dial_and_zero_count: (u32, u32), rotation: &i32) -> (u32, u32) {
+    let (dial, zero_count) = dial_and_zero_count;
+    // If rotation is negative, reinterpret the iteration as advancing in the opposite
+    // direction but using positive numbers only.
+    let calc_dial: u32 = if *rotation >= 0 { dial } else { (100 - dial) % 100 };
+    let calc_rot: u32 = rotation.unsigned_abs();
+
+    let q = calc_rot / 100;
+    let r = calc_rot % 100;
+    let new_dial = (dial + rotation.rem_euclid(100).unsigned_abs()) % 100;
+    let zero_count_delta = if calc_dial + r >= 100 {
+        1u32
+    } else {
+        0u32
+    };
+    (new_dial, zero_count + q + zero_count_delta)
 }
 
 fn main() {
     hoi::console::greet(2025, 1, 1);
     let rotations = hoi::file::read_lines("input/2025_day01.txt", &parse_rotation)
         .expect("Failed to read and parse rotations.");
-    let (_, part1_zero_count) = rotations.iter().fold((50, 0), &rotate);
+    let (_, part1_zero_count) = rotations.iter().fold((50, 0), &rotate_part_1);
     println!("Part 1 answer: {part1_zero_count}");
+
+    let (_, part2_zero_count) = rotations.iter().fold((50, 0), &rotate_part_2);
+    println!("Part 2 answer: {part2_zero_count}");
 }

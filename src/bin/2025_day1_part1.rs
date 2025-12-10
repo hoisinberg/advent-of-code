@@ -1,5 +1,13 @@
-use aoc::hoi::console::greet;
+use std::convert::identity;
+use aoc::hoi;
+
+
 
 fn main() {
-    greet(2025, 1, 1);
+    hoi::console::greet(2025, 1, 1);
+
+    let lines = hoi::file::read_lines("input/2025_day01.txt", &identity).expect("Couldn't read file.");
+    for line in lines {
+        println!("{line}");
+    }
 }

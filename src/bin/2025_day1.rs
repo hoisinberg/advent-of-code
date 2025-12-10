@@ -32,8 +32,8 @@ fn rotate_part_1(dial_and_zero_count: (u32, u32), rotation: &i32) -> (u32, u32) 
 
 fn rotate_part_2(dial_and_zero_count: (u32, u32), rotation: &i32) -> (u32, u32) {
     let (dial, zero_count) = dial_and_zero_count;
-    // If rotation is negative, reinterpret the iteration as advancing in the opposite
-    // direction but using positive numbers only.
+    // If rotation is negative, reinterpret calculation variables so we only use positive
+    // integers to count how many times we hit zero while advancing in the negative direction.
     let calc_dial: u32 = if *rotation >= 0 { dial } else { (100 - dial) % 100 };
     let calc_rot: u32 = rotation.unsigned_abs();
 

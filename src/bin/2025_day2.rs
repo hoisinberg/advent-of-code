@@ -14,13 +14,14 @@ fn count_digits(mut n: u64) -> u32 {
 
 // Given n with decimal representation abc, return abcabc
 fn duplicate(n: u64) -> u64 {
-    multiduplicate(n, 1)
+    multiduplicate(n, 2)
 }
 
 fn multiduplicate(n: u64, k: u32) -> u64 {
     let mut r = 0;
+    let shift_factor = 10u64.pow(count_digits(n));
     for _ in 0..k {
-        r += n * 10u64.pow(count_digits(n)) + n
+        r = (r * shift_factor) + n
     }
     r
 }
@@ -43,6 +44,21 @@ fn effective_floor(floor: u64) -> u64 {
     if d % 2 == 0 { floor } else { 10u64.pow(d) }
 }
 
+fn is_invalid_id(id: u64) -> bool {
+    let digits = count_digits(id);
+    for n in 1..=(digits / 2) {
+        if digits % n != 0 {
+            continue;
+        }
+        let q = digits / n;
+        let last_n_digits = id % (10u64.pow(n));
+        if multiduplicate(last_n_digits, q) == id {
+            return true;
+        }
+    }
+    return false;
+}
+
 fn sum_invalid_ids(range: &RangeInclusive<u64>) -> u64 {
     let seed_floor = halve_digits(effective_floor(*range.start()));
     let seed_ceiling = halve_digits(effective_ceiling(*range.end()));
@@ -50,17 +66,6 @@ fn sum_invalid_ids(range: &RangeInclusive<u64>) -> u64 {
         .map(&duplicate)
         .filter(|n| range.contains(n))
         .collect();
-    println!(
-        "actual: [{x}, {y}] eff: [{a}, {b}]",
-        x = range.start(),
-        y = range.end(),
-        a = effective_floor(*range.start()),
-        b = effective_ceiling(*range.end())
-    );
-    println!("seed: [{a}, {b}]", a = seed_floor, b = seed_ceiling);
-    for i in 0..std::cmp::min(3, invalid_ids.len()) {
-        println!("{s}", s = invalid_ids[i]);
-    }
     invalid_ids.iter().sum()
 }
 
@@ -93,10 +98,21 @@ fn part1(input: &Vec<String>) -> u64 {
         .map(&parse_range)
         .collect::<Result<Vec<_>, _>>()
         .expect("Failed to parse input ranges");
-    for range in &ranges {
-        println!("[{a}, {b}]", a = range.start(), b = range.end());
-    }
     ranges.iter().map(&sum_invalid_ids).sum()
+}
+
+fn part2(input: &Vec<String>) -> u64 {
+    let ranges = input
+        .iter()
+        .flat_map(|line| line.split(','))
+        .map(&parse_range)
+        .collect::<Result<Vec<_>, _>>()
+        .expect("Failed to parse input ranges");
+    ranges
+        .into_iter()
+        .flat_map(|range| range.into_iter())
+        .filter(|id| is_invalid_id(*id))
+        .sum()
 }
 
 fn main() {
@@ -104,4 +120,6 @@ fn main() {
     let input = hoi::file::read_lines("input/2025_day02.txt", &hoi::func::id_result)
         .expect("Couldn't read input.");
     println!("Part 1: {p1}", p1 = part1(&input));
+
+    println!("Part 2: {p2}", p2 = part2(&input));
 }
